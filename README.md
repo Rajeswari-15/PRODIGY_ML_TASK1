@@ -1,77 +1,131 @@
-# PRODIGY_ML_TASK1
-Built a house price prediction model using Linear Regression and enhanced it with Random Forest, feature engineering, cross-validation, and hyperparameter tuning. Visualized results and feature importance effectively.
+#main.py
 
-# 🏡 House Price Prediction - Internship Task 1
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
-This project was completed as **Task 1 of my internship at Prodigy Infotech**. The goal was to build a machine learning model that predicts house prices based on various features such as square footage, number of bedrooms, bathrooms, and more.
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
 
-## 📌 Problem Statement
+# Load dataset
+data = pd.read_csv("train.csv")
 
-> Implement a linear regression model to predict the prices of houses based on their square footage and the number of bedrooms and bathrooms.
+# Feature engineering
+data['HouseAge'] = data['YrSold'] - data['YearBuilt']
+data['RemodelAge'] = data['YrSold'] - data['YearRemodAdd']
+data['TotalBathrooms'] = data['FullBath'] + 0.5 * data['HalfBath']
+data['HasGarage'] = data['GarageArea'].apply(lambda x: 1 if x > 0 else 0)
 
-## 📂 Dataset
+# Define features and target
+features = [
+    'OverallQual', 'GrLivArea', 'GarageCars', 'TotalBsmtSF',
+    'TotalBathrooms', 'YearBuilt', 'HouseAge', 'RemodelAge',
+    'TotRmsAbvGrd', 'HasGarage', 'Neighborhood'
+]
+target = 'SalePrice'
 
-- Dataset Source: [Kaggle - House Prices: Advanced Regression Techniques](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques)
-- Files Used:
-  - `train.csv` – Training data
-  - `test.csv` *(optional for testing/prediction)*
-  - `data_description.txt` – Feature descriptions
+# Prepare data
+data = data[features + [target]].dropna()
+data = pd.get_dummies(data, columns=['Neighborhood'], drop_first=True)
 
-## 🧠 Techniques Used
+X = data.drop(target, axis=1)
+y = data[target]
 
-- **Linear Regression** – Initial implementation
-- **Random Forest Regressor** – Final enhanced model
-- **Feature Engineering**:
-  - House age
-  - Remodel age
-  - Total bathrooms
-  - Garage presence (binary)
-- Hyperparameter Tuning - using `GridSearchCV`
-- Cross-Validation - (5-fold) for robust evaluation
-- Feature Importance - plot using `matplotlib`
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
-## 📊 Evaluation Metrics:
-- Mean Squared Error (MSE)
-- R² Score
-- Cross-Validation Scores (Mean & Std Dev)
+# Train Random Forest model
+model = RandomForestRegressor(random_state=42)
+param_grid = {
+    'n_estimators': [100, 200],
+    'max_depth': [None, 10, 20],
+    'min_samples_split': [2, 5],
+    'min_samples_leaf': [1, 2],
+    'max_features': ['auto', 'sqrt']
+}
 
-## 📈 Visual Output
-- Top 10 important features visualized using `matplotlib` bar chart.
+grid = GridSearchCV(model, param_grid, cv=3, scoring='r2', n_jobs=-1, verbose=1)
+grid.fit(X_train, y_train)
+best_model = grid.best_estimator_
 
-## 🛠️ Tools & Libraries
-- Python
-- pandas
-- numpy
-- scikit-learn
-- matplotlib
+# Predictions
+y_pred = best_model.predict(X_test)
 
-## 🔧 Installation
+# Model evaluation
+print("\n📊 Model Evaluation:")
+print("Best Params:", grid.best_params_)
+print("Mean Squared Error:", mean_squared_error(y_test, y_pred))
+print("R² Score:", r2_score(y_test, y_pred))
 
-Install required libraries:
-'''
-pip install pandas numpy scikit-learn matplotlib
-'''
+# Cross-validation scores
+cv_scores = cross_val_score(best_model, X, y, cv=5, scoring='r2')
+print("\n🔁 Cross-Validation Scores:", cv_scores)
+print("Mean R²:", cv_scores.mean())
+print("Std Dev:", cv_scores.std())
 
-## ▶️ How to Run
+# Feature importances
+importances = pd.DataFrame({
+    'Feature': X.columns,
+    'Importance': best_model.feature_importances_
+}).sort_values(by='Importance', ascending=False)
 
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/Rajeswari-15/house-price-prediction.git
-   ```
-2. Add the `train.csv` file to the root folder.
-3. Run the script:
-
-   ```bash
-   python main.py
-   ```
-
-## 📽 Demo Video
-
-Check out the demo output video on my [LinkedIn profile](https://linkedin.com/in/yada-rajeshwari-022b8530b).
+# Plotting feature importances using Matplotlib
+plt.figure(figsize=(10, 6))
+plt.barh(importances['Feature'].head(10), importances['Importance'].head(10), color='skyblue')
+plt.title("Top 10 Feature Importances")
+plt.xlabel("Importance")
+plt.ylabel("Feature")
+plt.tight_layout()
+plt.show()
 
 
-## ✅ Project Status
+#linar_regression_simple.py
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
 
-✅ Task 1 successfully completed as part of my internship at **Prodigy Infotech**.
-📌 Fully functional machine learning pipeline with evaluation and visualization.
+# Load dataset
+data = pd.read_csv("train.csv")
+
+# Select only the requested features
+features = data[['GrLivArea', 'BedroomAbvGr', 'FullBath']]
+target = data['SalePrice']
+
+# Drop any rows with missing values in selected columns
+data_clean = data[['GrLivArea', 'BedroomAbvGr', 'FullBath', 'SalePrice']].dropna()
+
+X = data_clean[['GrLivArea', 'BedroomAbvGr', 'FullBath']]
+y = data_clean['SalePrice']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Train Linear Regression model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Predict on test set
+y_pred = model.predict(X_test)
+
+# Evaluate model
+print("Mean Squared Error:", mean_squared_error(y_test, y_pred))
+print("R² Score:", r2_score(y_test, y_pred))
+
+# Visualize Actual vs Predicted using Matplotlib
+plt.figure(figsize=(8, 6))
+plt.scatter(y_test, y_pred, color='blue', alpha=0.6)
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], color='red', linestyle='--')  # Line for perfect prediction
+plt.xlabel("Actual Sale Price")
+plt.ylabel("Predicted Sale Price")
+plt.title("Linear Regression: Actual vs Predicted Prices")
+plt.grid()
+plt.show()
+
+#Done with task1-House Price Prediction.
