@@ -130,4 +130,4 @@ plt.show()
 
 #Done with task1-House Price Prediction.
 
-To walk through the video of my code and output.i have posted it on my linkedin  - www.linkedin.com/in/yada-rajeshwari-022b8530b.
+To walk through the video of my code and output.I have posted it on my linkedin  - https://www.linkedin.com/posts/yada-rajeshwari-022b8530b_prodigyinfotech-internship-task1completed-activity-7330210836130525184-czYE?utm_source=share&utm_medium=member_desktop&rcm=ACoAAE8EndoBu65vprjIb-hNbUtHSPP2hiW1WU8
