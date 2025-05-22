@@ -129,3 +129,5 @@ plt.grid()
 plt.show()
 
 #Done with task1-House Price Prediction.
+
+To walk through the video of my code and output.i have posted it on my linkedin  - www.linkedin.com/in/yada-rajeshwari-022b8530b.
